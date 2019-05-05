@@ -38,7 +38,7 @@ def get_weather(city_name, weather_api):
 
   return res_dict
 
-def get_next_bus(lta_api, busstop, bus_list):
+def get_next_bus(lta_api, busstop, bus_list=None):
   """
   given a bus stop code return estimated arrival time for the next 3 buses of each bus in the bus list
 
@@ -48,7 +48,7 @@ def get_next_bus(lta_api, busstop, bus_list):
   :param busstop: bus stop code
   :type busstop: int
 
-  :param bus_list: list of bus to watch
+  :param bus_list: list of bus to watch, if None, all will be taken
   :type bus_list: list
 
   :return: results dataframe
@@ -80,14 +80,17 @@ def get_next_bus(lta_api, busstop, bus_list):
     buses_info.append([bus_number, first_arrival, second_arrival, third_arrival])
 
   res_df = pd.DataFrame(buses_info, columns=['bus_number', 'first_arrival', 'second_arrival', 'third_arrival'])
-  # only select target buses
-  res_df = res_df.loc[res_df['bus_number'].isin(bus_list)]
 
-  # TO WORK OUT
+  # only select target buses if its given
+  if bus_list:
+    res_df = res_df.loc[res_df['bus_number'].str.lower().isin(bus_list)]
+
   res_df['current_time'] = pd.Timestamp.now()
   res_df['first_interval'] = (res_df['first_arrival'] - res_df['current_time']).dt.seconds
-  res_df['second_interval'] = res_df['second_arrival'] - res_df['current_time']
-  res_df['third_interval'] = res_df['third_arrival'] - res_df['current_time']
+  res_df['second_interval'] = (res_df['second_arrival'] - res_df['current_time']).dt.seconds
+  res_df['third_interval'] = (res_df['third_arrival'] - res_df['current_time']).dt.seconds
+
+  return res_df
 
   # Undone, waiting for tommorrows, real time data
 

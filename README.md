@@ -7,11 +7,11 @@ As for now, she is able to
 
 - ask for weather
 - ask for news by topic from BBC and CNN
+- ask for bus arrival time
 
 In the future editions, these features will be added in
 
 - ask for news headlines
-- ask for bus arrival time
 - ask for platts news(www.spglobal.com/platts/en/market-insights/latest-news#)
 - ...
 

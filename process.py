@@ -147,6 +147,10 @@ def get_news(news_api, topics, latest, sources, article_cnt, kind='news'):
         url = article['url']
 
         articles_info.append([title, description, author, source, topic, published_at, url])
+
+    res_df = pd.DataFrame(articles_info,
+                          columns=['Title', 'Description', 'Author', 'Source', 'Topic', 'Publish Date', 'URL'])
+
   else:
     articles = client.get_top_headlines(sources=sources,
                                         language='en',
@@ -162,7 +166,9 @@ def get_news(news_api, topics, latest, sources, article_cnt, kind='news'):
 
       articles_info.append([title, description, author, source, published_at, url])
 
-  res_df = pd.DataFrame(articles_info, columns=['Title', 'Description', 'Author', 'Source', 'Topic', 'Publish Date', 'URL'])
+    res_df = pd.DataFrame(articles_info,
+                          columns=['Title', 'Description', 'Author', 'Source', 'Publish Date', 'URL'])
+
   return res_df
 
 def create_pdf(df, name):

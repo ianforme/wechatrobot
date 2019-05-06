@@ -15,10 +15,16 @@ news_cnt = config.article_cnt
 wechat_user =config.wechat_user
 
 bot = Bot(cache_path=True)
-user = bot.search(wechat_user)[0]
+
+# reply to specific friend or all
+if wechat_user != "":
+    user = bot.search(wechat_user)[0]
+else:
+    user = None
 
 @bot.register(user)
 def auto_reply(msg):
+    print(msg)
     # check whehter the user ask for weather
     if msg.text == '天气':
         weather_df = get_weather(city, weather_api)
@@ -31,7 +37,6 @@ def auto_reply(msg):
         if msg.text.startswith('新闻 '):
             topics = msg.text[3:].split(', ')
             news_df = get_news(news_api, topics, news_latest, news_sources, news_cnt)
-
         else:
             news_df = get_news(news_api, [], news_latest, news_sources, news_cnt, kind='headline')
 
@@ -43,28 +48,28 @@ def auto_reply(msg):
         # wait for 10 seconds before the pdf is generated
         for _ in range(10):
             # search for the pdf every 1 second
-            time.sleep(1)
             if os.path.isfile('news.pdf'):
                 user.send("这是你要的新闻~")
                 user.send_file('news.pdf')
-                flag = 1
                 os.remove('news.pdf')
+                flag = 1
                 break
+            time.sleep(1)
         if flag == 0:
             user.send("好像出问题了...联系孙孙！")
         return
 
     # check wther the user is asking for next bus arrival time at any bus stop
-    if msg.text.startswith("巴士 ") or msg.text == '坐巴士' or msg.text == '巴士NCS':
+    if msg.text.startswith("巴士 ") or msg.text == '坐巴士' or msg.text == '巴士ncs':
 
         # short cut for qiaoling and NCS
         if msg.text == '坐巴士':
-            msg.text = '巴士 63291 53.45.53m'
-        elif msg.text == '巴士NCS':
-            msg.text = '巴士 55039'
-
-        # extract bus stop number and potentially, bus lists
-        msg = msg.text.lower()[3:].split(" ")
+            msg = ['63291', '53.45.53m']
+        elif msg.text == '巴士ncs':
+            msg = ['55039']
+        else:
+            # extract bus stop number and potentially, bus lists
+            msg = msg.text.lower()[3:].split(" ")
 
         busstop = msg[0]
         if len(msg) == 1:
@@ -84,3 +89,4 @@ def auto_reply(msg):
                 message += "巴士: {}\n下一班 {} 分钟\n下下一班 {} 分钟\n下下下一班 {} 分钟\n========\n".\
                     format(bus_record[0], round(bus_record[1]/60, 1), round(bus_record[2]/60, 1), round(bus_record[3]/60, 1))
             return message
+

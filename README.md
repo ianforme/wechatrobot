@@ -28,4 +28,7 @@ In the future editions, these features will be added in
 ## Installation & Setup
 ## Example
 ## License
+The software is under MIT License
+
+Powered by NewsAPI.org
  

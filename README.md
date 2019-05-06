@@ -47,8 +47,8 @@ Currently the robot is able to do the following:
 - returning headline news from CNN and BBC when asked by '头条'
 - returning news about specific topics from CNN and BBC when asked by '新闻 topic1, topic2, .. ,topicX'
 - returning bus arrival time at speicfic bus stop when asked by '巴士 bus_stop_number, bus1.bus2.bus3 .. .busX'
-- returning 53, 45 and 53M bus arrival time at 63291 (for QL)
-- returning bus arrival time at 55039 (at back door of NCS) 
+- returning 53, 45 and 53M bus arrival time at 63291 (for QL) when asked by '坐巴士'
+- returning bus arrival time at 55039 (at back door of NCS)  when asked by '巴士ncs'
  
 ## License
 The software is under MIT License

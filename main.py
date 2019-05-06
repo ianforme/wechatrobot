@@ -27,9 +27,14 @@ def auto_reply(msg):
         return message
 
     # check whether the user is asking for news by topic
-    if msg.text.startswith('新闻 '):
-        topics = msg.text[3:].split(', ')
-        news_df = get_news(news_api, topics, news_latest, news_sources, news_cnt)
+    if msg.text.startswith('新闻 ') or msg.text == '头条':
+        if msg.text.startswith('新闻 '):
+            topics = msg.text[3:].split(', ')
+            news_df = get_news(news_api, topics, news_latest, news_sources, news_cnt)
+
+        else:
+            news_df = get_news(news_api, [], news_latest, news_sources, news_cnt, kind='headline')
+
         # create news.pdf
         create_pdf(news_df, 'news')
         user.send("新闻正在生成中...稍等！")
@@ -50,7 +55,14 @@ def auto_reply(msg):
         return
 
     # check wther the user is asking for next bus arrival time at any bus stop
-    if msg.text.startswith("巴士 "):
+    if msg.text.startswith("巴士 ") or msg.text == '坐巴士' or msg.text == '巴士NCS':
+
+        # short cut for qiaoling and NCS
+        if msg.text == '坐巴士':
+            msg.text = '巴士 63291 53.45.53m'
+        elif msg.text == '巴士NCS':
+            msg.text = '巴士 55039'
+
         # extract bus stop number and potentially, bus lists
         msg = msg.text.lower()[3:].split(" ")
 
@@ -72,28 +84,3 @@ def auto_reply(msg):
                 message += "巴士: {}\n下一班 {} 分钟\n下下一班 {} 分钟\n下下下一班 {} 分钟\n========\n".\
                     format(bus_record[0], round(bus_record[1]/60, 1), round(bus_record[2]/60, 1), round(bus_record[3]/60, 1))
             return message
-
-    # quick short cut for CQL~
-    if msg.text == "坐巴士":
-        msg = "巴士 63291 53.45.53m"
-        msg = msg.lower()[3:].split(" ")
-
-        busstop = msg[0]
-        if len(msg) == 1:
-            bus_list = None
-        else:
-            bus_list = msg[1].split('.')
-
-        bus_df = get_next_bus(lta_api, busstop, bus_list)
-        if len(bus_df) == 0:
-            return "目前好像已经没有巴士了呢...或者出问题了，联系孙孙！"
-        else:
-            message = ""
-            for i in bus_df[['bus_number', 'first_interval', 'second_interval', 'third_interval']].iterrows():
-                bus_record = list(i[1])
-                bus_record = [bus_record[0]] + [86400 - i if i > 80000 else i for i in bus_record[1:]]
-                message += "巴士: {}\n下一班 {} 分钟\n下下一班 {} 分钟\n下下下一班 {} 分钟\n========\n". \
-                    format(bus_record[0], round(bus_record[1] / 60, 1), round(bus_record[2] / 60, 1),
-                           round(bus_record[3] / 60, 1))
-            return message
-

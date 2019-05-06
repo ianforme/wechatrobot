@@ -46,7 +46,7 @@ def get_next_bus(lta_api, busstop, bus_list=None):
   :type lta_api: str
 
   :param busstop: bus stop code
-  :type busstop: int
+  :type busstop: str
 
   :param bus_list: list of bus to watch, if None, all will be taken
   :type bus_list: list
@@ -94,9 +94,9 @@ def get_next_bus(lta_api, busstop, bus_list=None):
 
   # Undone, waiting for tommorrows, real time data
 
-def get_news(news_api, topics, latest, sources, article_cnt):
+def get_news(news_api, topics, latest, sources, article_cnt, kind='news'):
   """
-  given a topic, extract latest trending news from sources
+  given a topic, extract latest trending news / headlines from sources
 
   :param news_api: newsapi
   :type news_api: str
@@ -104,7 +104,7 @@ def get_news(news_api, topics, latest, sources, article_cnt):
   :param topics: list of topic to search for
   :type topics: list
 
-  :param latest: maxium number of days to trace back
+  :param latest: maxmium number of days to trace back
   :type latest: int
 
   :param sources: news sources
@@ -112,6 +112,9 @@ def get_news(news_api, topics, latest, sources, article_cnt):
 
   :param article_cnt: number of articles to return
   :type article_cnt: int
+
+  :param kind: headline or news, if headline is chosen, topic is ignored
+  :type kind: str
 
   :return: results dataframe
   """
@@ -125,15 +128,30 @@ def get_news(news_api, topics, latest, sources, article_cnt):
 
   # /v2/everythin
   articles_info = []
-  for topic in topics:
-    articles = client.get_everything(q=topic,
-                                     sources=sources,
-                                     from_param=earliest_date,
-                                     language='en',
-                                     sort_by='publishedAt',
-                                     page_size=article_cnt)['articles']
+  if kind == 'news':
+    for topic in topics:
+      articles = client.get_everything(q=topic,
+                                       sources=sources,
+                                       from_param=earliest_date,
+                                       language='en',
+                                       sort_by='publishedAt',
+                                       page_size=article_cnt)['articles']
 
-    # extract description abt the article
+      # extract description abt the article
+      for article in articles:
+        title = article['title']
+        author = article['author']
+        source = article['source']['name']
+        published_at = article['publishedAt']
+        description = article['description']
+        url = article['url']
+
+        articles_info.append([title, description, author, source, topic, published_at, url])
+  else:
+    articles = client.get_top_headlines(sources=sources,
+                                        language='en',
+                                        page_size=article_cnt)['articles']
+
     for article in articles:
       title = article['title']
       author = article['author']
@@ -142,7 +160,7 @@ def get_news(news_api, topics, latest, sources, article_cnt):
       description = article['description']
       url = article['url']
 
-      articles_info.append([title, description, author, source, topic, published_at, url])
+      articles_info.append([title, description, author, source, published_at, url])
 
   res_df = pd.DataFrame(articles_info, columns=['Title', 'Description', 'Author', 'Source', 'Topic', 'Publish Date', 'URL'])
   return res_df

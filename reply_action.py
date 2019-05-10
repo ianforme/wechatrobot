@@ -201,7 +201,7 @@ def reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, 
     :return: message string
     """
 
-    user.send("生成Platts 新闻中...请稍后")
+    user.send("生成Platts 新闻中...请稍候")
     driver = initialise_platts_driver(platts_url, driver_path)
     driver = click_options(driver)
     res = []

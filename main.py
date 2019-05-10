@@ -25,7 +25,10 @@ bot = Bot(cache_path=True)
 # define target user to reply to
 user = bot.search(wechat_user)[0]
 
-@bot.register(user)
+# for testing, remove after testing
+user = bot.self
+
+@bot.register(user, except_self=False)
 def auto_reply(msg):
     print(msg)
     # check whehter the user ask for weather
@@ -47,5 +50,3 @@ def auto_reply(msg):
     if msg.text.startswith("工作 "):
         reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, user)
         return None
-
-

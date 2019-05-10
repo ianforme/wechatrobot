@@ -1,5 +1,6 @@
 from news_bus_weather import *
 from jobstreet import *
+from utils import *
 import os
 import time
 
@@ -155,7 +156,7 @@ def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, use
     driver.quit()
 
     res_df = res_df.merge(app_df, on='url', how = 'left')
-    res_df = process_output(res_df)
+    res_df = process_jobs_output(res_df)
     create_pdf(res_df, 'jobs')
 
     flag = 0

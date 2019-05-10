@@ -90,7 +90,6 @@ def extract_data(driver):
         - job title
         - company
         - location
-        - salary
         - description
         - post dates
         - url
@@ -108,8 +107,6 @@ def extract_data(driver):
     res_dict = {
         'job_title': [],
         'company': [],
-        'location': [],
-        'salary': [],
         'description': [],
         'recency': [],
         'url': [],
@@ -133,18 +130,6 @@ def extract_data(driver):
         except:
             company = None
 
-        # For location
-        try:
-            location = panel.find_element_by_class_name('job-location').text
-        except:
-            location = None
-
-        # For expected salary
-        try:
-            salary = panel.find_element_by_id('job-salary').text
-        except:
-            salary = None
-
         # For description
         try:
             description = panel.find_element_by_id('job_desc_detail_{}'.format(i + 1)).text
@@ -161,8 +146,6 @@ def extract_data(driver):
         # aggregate results
         res_dict['job_title'].append(title)
         res_dict['company'].append(company)
-        res_dict['location'].append(location)
-        res_dict['salary'].append(salary)
         res_dict['description'].append(description)
         res_dict['recency'].append(recency)
         res_dict['url'].append(url)
@@ -186,15 +169,29 @@ def extract_requirements(driver, url_list):
 
     exp_l = []
     edu_l = []
+    salary_l = []
+    location_l = []
 
     for url in url_list:
-        time.sleep(5)
         driver.get(url)
+        time.sleep(5)
         # get years of experiences
         try:
             experience = driver.find_element_by_id("years_of_experience").text
         except:
-            experience = ''
+            experience = None
+
+        # get the salary range
+        try:
+            salary_range = driver.find_element_by_id('salary_range').text
+        except:
+            salary_range = None
+
+        # get the location
+        try:
+            location = driver.find_element_by_id('single_work_location').text
+        except:
+            location = None
 
         # extract the job description
         jd_txt = driver.find_element_by_id('job_description').text.lower()
@@ -203,15 +200,22 @@ def extract_requirements(driver, url_list):
         education_lvl = ['bachelor', 'master', 'phd', 'doctor', 'diploma']
         education_req = ', '.join([i for i in education_lvl if i in jd_txt])
 
+        if education_req == '':
+            education_req = None
+
         # TODO: Keywords extraction based text analysis and NLP, refine education keywords extraction as well
 
         exp_l.append(experience)
         edu_l.append(education_req)
+        salary_l.append(salary_range)
+        location_l.append(location)
 
     res_df = pd.DataFrame({
         'url' : url_list,
         'experience' : exp_l,
-        'education' : edu_l
+        'education' : edu_l,
+        'salary': salary_l,
+        'location': location_l
     })
 
     return driver, res_df
@@ -231,7 +235,7 @@ def next_page(driver):
     return driver
 
 
-def process_output(final_df):
+def process_jobs_output(final_df):
     """
     preprocess the dataframe before creating pdf
 

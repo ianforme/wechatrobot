@@ -10,11 +10,7 @@ As for now, she is able to
 - ask for bus arrival time
 - ask for news headlines
 - ask for jobs
-
-In the future editions, these features will be added in
-
-- ask for platts news(www.spglobal.com/platts/en/market-insights/latest-news#)
-- ask for discount and promo
+- ask for [platts news](www.spglobal.com/platts/en/market-insights/latest-news#)
 
 ## Dependencies
 
@@ -36,12 +32,6 @@ In the future editions, these features will be added in
 - Configure the user you want to respond to in the config file
 - Run main.py script
 - Scan the QR Code with your robot WeChat account
-- Usage of the other parameters in config.py are:
-    - city: weather of this city
-    - topics: not in use for now, future prove
-    - latest: controls latency of news on specific topic to be extracted, unit is day
-    - sources: news sources, refers News API for more sources available
-    - article_cnt: number of articles to return for each news topic
 
 ## Example
 Currently the robot is able to do the following:
@@ -52,6 +42,7 @@ Currently the robot is able to do the following:
 - returning 53, 45 and 53M bus arrival time at 63291 (for QL) when asked by '坐巴士'
 - returning bus arrival time at 55039 (at back door of NCS)  when asked by '巴士ncs'
 - returning jobs from jobstreet.com when asked by '工作 job1, job2, .. , jobX'
+- returning news from Platts when asked by platts
  
 ## License
 The software is under MIT License

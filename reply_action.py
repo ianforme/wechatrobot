@@ -1,10 +1,11 @@
 from news_bus_weather import *
 from jobstreet import *
 from utils import *
+from platts import *
 import os
 import time
 
-def reply_weather(city, weather_api):
+def reply_weather(weather_api, city='Singapore'):
     """
     generate weather meassgae
 
@@ -132,7 +133,10 @@ def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, use
     :type js_password: str
 
     :param js_pages: number of pages of job postings to extract
-    :param user: int
+    :type js_pages: int
+
+    :param user: WeChat user to reply to
+    :type user: wxpy user
 
     :return: None
     """
@@ -171,6 +175,52 @@ def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, use
         time.sleep(1)
     if flag == 0:
         user.send("好像出问题了...！")
+
+def reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, user):
+    """
+    generate platts meassgae
+
+    :param driver_path: webdriver path
+    :type driver_path: str
+
+    :param platts_url: platts url
+    :type platts_url: str
+
+    :param platts_pages: pages to load
+    :type platts_pages: int
+
+    :param url_api: url shorten api
+    :type url_api: str
+
+    :param url_workspace: url shorten workspace id
+    :type url_workspace: str
+
+    :param user: WeChat user to reply to
+    :type user: wxpy user
+
+    :return: message string
+    """
+
+    user.send("生成Platts 新闻中...请稍后")
+    driver = initialise_platts_driver(platts_url, driver_path)
+    driver = click_options(driver)
+    res = []
+
+    for _ in range(platts_pages):
+        driver = load_more_page(driver)
+        time.sleep(2)
+        driver = scroll_down(driver)
+        time.sleep(2)
+        driver, res_df = extract_news(driver)
+
+        res.append(res_df)
+    driver.quit()
+
+    msg = process_platts_output(res_df, url_api, url_workspace)
+
+    user.send("最新Platts 新闻如下：")
+    return msg
+
 
 
 

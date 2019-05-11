@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+
 from news_bus_weather import *
 from jobstreet import *
 from utils import *
 from platts import *
 import os
 import time
+
 
 def reply_weather(weather_api, city='Singapore'):
     """
@@ -23,7 +26,8 @@ def reply_weather(weather_api, city='Singapore'):
         weather_df['weather'])
     return message
 
-def reply_news(msg, news_api, news_latest, news_sources, news_cnt, user):
+
+def reply_news(msg, news_api, news_latest, news_sources, news_cnt, url_api, url_workspace, user):
     """
     generate news pdf and reply to the user
 
@@ -42,6 +46,12 @@ def reply_news(msg, news_api, news_latest, news_sources, news_cnt, user):
     :param news_cnt: number of news to extract
     :type news_cnt: int
 
+    :param url_api: url shorten api
+    :type url_api: str
+
+    :param url_workspace: url shorten workspace id
+    :type url_workspace: str
+
     :param user: WeChat user to reply to
     :type user: wxpy user
 
@@ -53,24 +63,26 @@ def reply_news(msg, news_api, news_latest, news_sources, news_cnt, user):
     else:
         news_df = get_news(news_api, [], news_latest, news_sources, news_cnt, kind='headline')
 
-    # create news.pdf
-    create_pdf(news_df, 'news')
+    # create news pdf
+    news_file = '{}_{}'.format(msg.text, user.name)
+    news_pdf = news_file+'.pdf'
+    create_pdf(news_df, news_file)
     user.send("新闻正在生成中...稍等！")
 
-    flag = 0
-    # wait for 10 seconds before the pdf is generated
-    for _ in range(10):
-        # search for the pdf every 1 second
-        if os.path.isfile('news.pdf'):
-            user.send("这是你要的新闻~")
-            user.send_file('news.pdf')
-            os.remove('news.pdf')
-            flag = 1
-            break
-        time.sleep(1)
-    if flag == 0:
-        user.send("好像出问题了...！")
+    # create news message
+    news_df.columns = [i.lower() for i in news_df.columns]
+    message = process_news_output(news_df, url_api, url_workspace)
+
+    # send message to user
+    user.send("相关新闻如下：\n" + message)
+
+    # send pdf file
+    user.send_file(news_pdf)
+    user.send("更多新闻请参阅此文档")
+    os.remove(news_pdf)
+
     return
+
 
 def reply_bus(msg, lta_api):
     """
@@ -113,9 +125,10 @@ def reply_bus(msg, lta_api):
                        round(bus_record[3] / 60, 1))
         return message
 
-def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, user):
+
+def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, sender_email, sender_password, user):
     """
-    generate jobs pdf and send to user
+    generate jobs pdf and send to user email
 
     :param msg: wxpy meassage object
     :type msg: wxpy meassage object
@@ -135,6 +148,12 @@ def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, use
     :param js_pages: number of pages of job postings to extract
     :type js_pages: int
 
+    :param sender_email: sender's email
+    :type sender_email: str
+
+    :param sender_password: sender's password
+    :type sender_password: str
+
     :param user: WeChat user to reply to
     :type user: wxpy user
 
@@ -142,7 +161,8 @@ def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, use
     """
     user.send('生成工作信息中，需要等待一段时间，请稍候...')
 
-    keywords = msg.text[3:].split(', ')
+    email = msg.text.split('^')[-1]
+    keywords = msg.text.split('^')[0][3:].strip().split(', ')
     driver = initialise_driver(js_url, driver_path)
     driver = login(driver, js_username, js_password)
 
@@ -159,22 +179,19 @@ def reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, use
 
     driver.quit()
 
-    res_df = res_df.merge(app_df, on='url', how = 'left')
+    res_df = res_df.merge(app_df, on='url', how='left')
     res_df = process_jobs_output(res_df)
-    create_pdf(res_df, 'jobs')
+    file_name = '{}_{}'.format(msg.text, user.name)
+    create_pdf(res_df, file_name)
 
-    flag = 0
-    for _ in range(10):
-        # search for the pdf every 1 second
-        if os.path.isfile('jobs.pdf'):
-            user.send("工作信息生成完毕！")
-            user.send_file('jobs.pdf')
-            os.remove('jobs.pdf')
-            flag = 1
-            break
-        time.sleep(1)
-    if flag == 0:
-        user.send("好像出问题了...！")
+
+    body = 'To be updated'
+
+    send_email(sender_email, sender_password, email, file_name, body, file_name+'.pdf')
+    user.send('工作信息已经被发送至{}, 请查收'.format(email))
+    os.remove(file_name+'.pdf')
+    return
+
 
 def reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, user):
     """
@@ -216,12 +233,7 @@ def reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, 
         res.append(res_df)
     driver.quit()
 
-    msg = process_platts_output(res_df, url_api, url_workspace)
+    msg = process_news_output(res_df, url_api, url_workspace)
 
     user.send("最新Platts 新闻如下：")
     return msg
-
-
-
-
-

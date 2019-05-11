@@ -1,11 +1,18 @@
+# -*- coding: utf-8 -*-
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.lib import colors
+import requests, json
 
-import requests
-import json
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from os.path import basename
+from email.mime.application import MIMEApplication
+
 
 def create_pdf(df, name):
     """
@@ -100,3 +107,80 @@ def shorten_url(url, url_shorten_api, url_shorten_workspace):
         return link["shortUrl"]
     else:
         return url
+
+
+def process_news_output(res_df, url_shorten_api, url_shorten_workspace):
+    """
+    Generate wechat message to send based on result dataframe
+
+    :param res_df: news dataframe
+    :type res_df: pandas.DataFrame
+
+    :param url_shorten_api: URL Link Shortener API
+    :type url_shorten_api: str
+
+    :param url_shorten_workspace: URL Link Shortener workspace ID
+    :type url_shorten_workspace: str
+
+    :return: processed string
+    """
+
+    res_df['shorten_url'] = res_df['url'].apply(lambda x: shorten_url(x, url_shorten_api, url_shorten_workspace))
+    res_df = res_df.loc[-res_df['shorten_url'].str.startswith('https')].reset_index(drop=True)
+    res_df['shorten_url'] = 'https://' + res_df['shorten_url']
+
+    msg = ''
+
+    for i in res_df.iterrows():
+        news_info = "{}\n{}\n-------\n".format(i[1]['title'], i[1]['shorten_url'])
+        msg += news_info
+
+    return msg
+
+
+def send_email(sender_email, sender_password, receiver_email, subject, body, attachement_path):
+    """
+    Send results to an email
+
+    :param sender_email: sender's email
+    :type sender_email: str
+
+    :param sender_password: sender's password
+    :type sender_password: str
+
+    :param receiver_email: receivers email
+    :type receiver_email: str
+
+    :param subject: email subject
+    :type subject: str
+
+    :param body: email body
+    :type body: str
+
+    :param attachement_path: path for file to be sent over
+    :type attachement_path: str
+
+    :return: None
+    """
+    # creates SMTP session
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s.starttls()
+    s.login(sender_email, sender_password)
+
+    # instance of MIMEMultipart
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    # open the file to be sent
+    with open(attachement_path, 'rb') as fil:
+        part = MIMEApplication(fil.read(), Name=basename(attachement_path))
+        part['Content-Disposition'] = 'attachment; filename="%s"' % basename(attachement_path)
+        msg.attach(part)
+
+    # send email
+    s.sendmail(sender_email, receiver_email, msg.as_string())
+    # terminating the session
+    s.quit()

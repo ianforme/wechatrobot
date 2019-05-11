@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import config
 from reply_action import *
 from wxpy import *
@@ -20,6 +22,8 @@ js_url = config.js_url
 js_username = config.js_username
 js_password = config.js_password
 js_pages = config.js_pages
+js_email = config.js_email
+js_email_password = config.js_email_password
 
 # config for platts
 platts_url = config.platts_url
@@ -32,7 +36,9 @@ wechat_user =config.wechat_user
 bot = Bot(cache_path=True)
 
 # define target user to reply to
-user = bot.search(wechat_user)[0]
+# user = bot.search(wechat_user)[0]
+
+user = bot.self
 
 @bot.register(user, except_self=False)
 def auto_reply(msg):
@@ -44,7 +50,7 @@ def auto_reply(msg):
 
     # check whether the user is asking for news by topic
     if msg.text.startswith('新闻 ') or msg.text == '头条':
-        reply_news(msg, news_api, news_latest, news_sources, news_cnt, user)
+        reply_news(msg, news_api, news_latest, news_sources, news_cnt, url_api, url_workspace, msg.sender)
         return None
 
     # check whether the user is asking for next bus arrival time at any bus stop
@@ -54,10 +60,10 @@ def auto_reply(msg):
 
     # check whether the use is ask for jobs
     if msg.text.startswith("工作 "):
-        reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, user)
+        reply_jobs(msg, driver_path, js_url, js_username, js_password, js_pages, js_email, js_email_password, msg.sender)
         return None
 
     # check whether the user is asking for platts headlines
     if msg.text.lower() == 'platts':
-        message = reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, user)
+        message = reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, msg.sender)
         return message

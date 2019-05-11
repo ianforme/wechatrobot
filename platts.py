@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
+
 from selenium import webdriver
-from utils import shorten_url
 import pandas as pd
 
 def initialise_platts_driver(url, path):
@@ -105,32 +106,5 @@ def scroll_down(driver):
 
     return driver
 
-def process_platts_output(res_df, url_shorten_api, url_shorten_workspace):
-    """
-    Generate wechat message to send based on result dataframe
-
-    :param res_df: result dataframe
-    :type res_df: pandas.DataFrame
-
-    :param url_shorten_api: URL Link Shortener API
-    :type url_shorten_api: str
-
-    :param url_shorten_workspace: URL Link Shortener workspace ID
-    :type url_shorten_workspace: str
-
-    :return: processed string
-    """
-
-    res_df['shorten_url'] = res_df['url'].apply(lambda x: shorten_url(x, url_shorten_api, url_shorten_workspace))
-    res_df = res_df.loc[-res_df['shorten_url'].str.startswith('https')].reset_index(drop=True)
-    res_df['shorten_url'] = 'https://' + res_df['shorten_url']
-
-    msg = ''
-
-    for i in res_df.iterrows():
-        news_info = "{}\n{}\n-------\n".format(i[1]['title'], i[1]['shorten_url'])
-        msg += news_info
-
-    return msg
 
 

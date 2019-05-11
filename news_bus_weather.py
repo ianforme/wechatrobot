@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import requests, json
 import pandas as pd
 from newsapi import NewsApiClient
@@ -58,7 +60,7 @@ def get_next_bus(lta_api, busstop, bus_list=None):
     content = json.loads(response.content.decode('utf8').replace("'", '"'))
 
     if len(content['Services']) == 0:
-        return "已经没有巴士了..."
+        return pd.DataFrame()
 
     buses_info = []
     for service in content['Services']:
@@ -139,19 +141,6 @@ def get_news(news_api, topics, latest, sources, article_cnt, kind='news'):
                                              sort_by='publishedAt',
                                              page_size=article_cnt)['articles']
 
-            # extract description abt the article
-            for article in articles:
-                title = article['title']
-                author = article['author']
-                source = article['source']['name']
-                published_at = article['publishedAt']
-                description = article['description']
-                url = article['url']
-
-                articles_info.append([title, description, author, source, topic, published_at, url])
-
-        res_df = pd.DataFrame(articles_info,
-                              columns=['Title', 'Description', 'Author', 'Source', 'Topic', 'Publish Date', 'URL'])
 
     else:
         # to extract headlines
@@ -159,17 +148,15 @@ def get_news(news_api, topics, latest, sources, article_cnt, kind='news'):
                                             language='en',
                                             page_size=article_cnt)['articles']
 
-        for article in articles:
-            title = article['title']
-            author = article['author']
-            source = article['source']['name']
-            published_at = article['publishedAt']
-            description = article['description']
-            url = article['url']
+    for article in articles:
+        title = article['title']
+        published_at = article['publishedAt']
+        description = article['description']
+        url = article['url']
 
-            articles_info.append([title, description, author, source, published_at, url])
+        articles_info.append([title, description, published_at, url])
 
-        res_df = pd.DataFrame(articles_info,
-                              columns=['Title', 'Description', 'Author', 'Source', 'Publish Date', 'URL'])
+    res_df = pd.DataFrame(articles_info,
+                          columns=['Title', 'Description', 'Publish Date', 'URL'])
 
     return res_df

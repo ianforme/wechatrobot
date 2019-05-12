@@ -41,8 +41,8 @@ Currently the robot is able to do the following:
 - returning bus arrival time at speicfic bus stop when asked by '巴士 bus_stop_number, bus1.bus2.bus3 .. .busX'
 - returning 53, 45 and 53M bus arrival time at 63291 (for QL) when asked by '坐巴士'
 - returning bus arrival time at 55039 (at back door of NCS)  when asked by '巴士ncs'
-- returning jobs from jobstreet.com when asked by '工作 job1, job2, .. , jobX'
-- returning news from Platts when asked by platts
+- returning jobs from jobstreet.com and send email when asked by '工作 job1, job2, .. , jobX ^email@email.com'
+- returning news from Platts when asked by 'platts'
  
 ## License
 The software is under MIT License

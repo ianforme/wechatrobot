@@ -36,9 +36,9 @@ wechat_user =config.wechat_user
 bot = Bot(cache_path=True)
 
 # define target user to reply to
-# user = bot.search(wechat_user)[0]
-
-user = bot.self
+user = bot.search(wechat_user)[0]
+#
+# user = bot.self
 
 @bot.register(user, except_self=False)
 def auto_reply(msg):
@@ -67,3 +67,9 @@ def auto_reply(msg):
     if msg.text.lower() == 'platts':
         message = reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, msg.sender)
         return message
+
+    # return test guide
+    if msg.text == '测试指南':
+        message = reply_test()
+        return message
+

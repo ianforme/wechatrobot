@@ -65,8 +65,8 @@ def reply_news(msg, news_api, news_latest, news_sources, news_cnt, url_api, url_
 
     # create news pdf
     news_file = '{}_{}'.format(msg.text, user.name)
-    news_pdf = news_file+'.pdf'
-    create_pdf(news_df, news_file)
+    # news_pdf = news_file+'.pdf'
+    # create_pdf(news_df, news_file)
     user.send("新闻正在生成中...稍等！")
 
     # create news message
@@ -74,12 +74,15 @@ def reply_news(msg, news_api, news_latest, news_sources, news_cnt, url_api, url_
     message = process_news_output(news_df, url_api, url_workspace)
 
     # send message to user
-    user.send("相关新闻如下：\n" + message)
+    if message != '':
+        user.send("相关新闻如下：\n" + message)
+    else:
+        user.send("没有相关新闻，请尝试其他关键词，如'Finance'")
 
-    # send pdf file
-    user.send_file(news_pdf)
-    user.send("更多新闻请参阅此文档")
-    os.remove(news_pdf)
+    # # send pdf file
+    # user.send_file(news_pdf)
+    # user.send("更多新闻请参阅此文档")
+    # os.remove(news_pdf)
 
     return
 
@@ -237,3 +240,23 @@ def reply_platts(driver_path, platts_url, platts_pages, url_api, url_workspace, 
 
     user.send("最新Platts 新闻如下：")
     return msg
+
+def reply_test():
+    """
+    return instruction for test
+
+    :return: instruction text
+    """
+
+    message = '可使用的口令如下：\n\n' \
+              '1. 天气 -- 返回天气预测\n' \
+              '2. 头条 -- 返回今日CNN，BBC新闻头条\n' \
+              '3. platts -- 返回platts 新闻\n\n' \
+              '4. 新闻 topic1, topic2 .. , topicX -- 根据所选主题，返回新闻\n' \
+              '例：新闻 nba, finance\n\n' \
+              '5. 巴士 bus stop number，[bus1.bus2. .. .busX] -- 根据所选巴士站号码及巴士号码，返回接下来三班巴士抵达时间\n' \
+              '例：巴士 63291, 53.45.53m\n\n' \
+              '6. 工作 job1, job2 .. , jobX ^email@email.com -- 爬取相关工作并发送结果至指定邮箱\n'\
+              '例： 工作 data scientist, data analyst ^sunwrn@gmail.com\n'
+
+    return message

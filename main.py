@@ -37,10 +37,8 @@ bot = Bot(cache_path=True)
 
 # define target user to reply to
 user = bot.search(wechat_user)[0]
-#
-# user = bot.self
 
-@bot.register(user, except_self=False)
+@bot.register([user, bot.self], except_self=False)
 def auto_reply(msg):
     print(msg)
     # check whehter the user ask for weather

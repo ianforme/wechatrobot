@@ -1,5 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.idea/
+*.pkl
+*.csv
+chromedriver
 *.py[cod]
 *$py.class
 

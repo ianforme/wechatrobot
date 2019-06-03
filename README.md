@@ -1,6 +1,9 @@
 # WeChatBot
 WeChatBot is a customized chat bot built on Python that acts as a WeChat personal assistant for Qiaoling
 
+## Demo
+![Snapshot](https://user-images.githubusercontent.com/12608868/58816662-85b73380-865c-11e9-82d7-3de82b9652db.jpeg)
+
 
 ## Introduction
 As for now, she is able to 
